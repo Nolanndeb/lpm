@@ -35,7 +35,7 @@
     <script>
         let nomsDesJoueurs = [];
         let scoresDesJoueurs = [];
-        const tours = 10;
+        const tours = 1; // Un seul tour
 
         function initialiserJoueurs() {
             const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
@@ -82,11 +82,9 @@
             const thEmpty = document.createElement('th');
             headerRow.appendChild(thEmpty);
 
-            for (let i = 0; i < tours; i++) {
-                const th = document.createElement('th');
-                th.textContent = `Tour ${i + 1}`;
-                headerRow.appendChild(th);
-            }
+            const th = document.createElement('th');
+            th.textContent = 'Tour 1';
+            headerRow.appendChild(th);
 
             const thTotal = document.createElement('th');
             thTotal.textContent = 'Total';
@@ -100,17 +98,15 @@
                 th.textContent = joueur;
                 row.appendChild(th);
 
-                for (let i = 0; i < tours; i++) {
-                    const td = document.createElement('td');
-                    const input = document.createElement('input');
-                    input.type = 'number';
-                    input.min = '0';
-                    input.max = '60';
-                    input.id = `score${index}_${i}`;
-                    input.oninput = () => mettreAJourTotal(index);
-                    td.appendChild(input);
-                    row.appendChild(td);
-                }
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.max = '60';
+                input.id = `score${index}_0`;
+                input.oninput = () => mettreAJourTotal(index);
+                td.appendChild(input);
+                row.appendChild(td);
 
                 const tdTotal = document.createElement('td');
                 tdTotal.id = `total${index}`;
@@ -132,10 +128,10 @@
             let total = 0;
 
             for (let i = 0; i < tours; i++) {
-                const score = parseInt(document.getElementById(`score${joueurIndex}_${i}`).value) || 0;
+                const score = parseInt(document.getElementById(`score${joueurIndex}_0`).value) || 0;
                 if (score > 30) {
                     scoresDesJoueurs[joueurIndex][i] = 0;
-                    alert(`Score du joueur ${nomsDesJoueurs[joueurIndex]} au tour ${i + 1} est annulé car supérieur à 30.`);
+                    alert(`Score du joueur ${nomsDesJoueurs[joueurIndex]} est annulé car supérieur à 30.`);
                 } else {
                     scoresDesJoueurs[joueurIndex][i] = score;
                 }
