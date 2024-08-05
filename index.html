@@ -29,6 +29,7 @@
     <button onclick="initialiserJoueurs()">Valider</button>
 
     <div id="joueurs"></div>
+    <div id="niveau"></div>
     <div id="grille"></div>
     <div id="resultats"></div>
 
@@ -68,10 +69,37 @@
                 nomsDesJoueurs.push(joueurNom);
             }
 
-            afficherGrille();
+            afficherNiveau();
+        }
+
+        function afficherNiveau() {
+            const niveauDiv = document.getElementById('niveau');
+            niveauDiv.innerHTML = '';
+
+            const label = document.createElement('label');
+            label.textContent = 'Choisissez un niveau: ';
+            niveauDiv.appendChild(label);
+
+            const select = document.createElement('select');
+            select.id = 'niveauSelect';
+            const niveaux = ['Niveau 1', 'Niveau 2', 'Niveau 3'];
+            niveaux.forEach((niveau, index) => {
+                const option = document.createElement('option');
+                option.value = index + 1;
+                option.textContent = niveau;
+                select.appendChild(option);
+            });
+            niveauDiv.appendChild(select);
+
+            const button = document.createElement('button');
+            button.textContent = 'Commencer le jeu';
+            button.onclick = afficherGrille;
+            niveauDiv.appendChild(button);
         }
 
         function afficherGrille() {
+            const niveau = document.getElementById('niveauSelect').value;
+            const maxBoisson = niveau * 10;
             const grilleDiv = document.getElementById('grille');
             grilleDiv.innerHTML = '';
 
@@ -103,7 +131,7 @@
                 input.min = '0';
                 input.max = '60';
                 input.id = `score${index}`;
-                input.oninput = () => mettreAJourScore(index);
+                input.oninput = () => mettreAJourScore(index, maxBoisson);
                 tdTour.appendChild(input);
                 row.appendChild(tdTour);
 
@@ -119,11 +147,11 @@
 
             const button = document.createElement('button');
             button.textContent = 'Calculer les résultats';
-            button.onclick = afficherResultats;
+            button.onclick = () => afficherResultats(maxBoisson);
             grilleDiv.appendChild(button);
         }
 
-        function mettreAJourScore(joueurIndex) {
+        function mettreAJourScore(joueurIndex, maxBoisson) {
             const score = parseInt(document.getElementById(`score${joueurIndex}`).value) || 0;
 
             if (score >= 30) {
@@ -136,7 +164,7 @@
             document.getElementById(`total${joueurIndex}`).textContent = scoresDesJoueurs[joueurIndex];
         }
 
-        function afficherResultats() {
+        function afficherResultats(maxBoisson) {
             const resultatsDiv = document.getElementById('resultats');
             resultatsDiv.innerHTML = '<h2>Scores des joueurs:</h2>';
 
@@ -145,12 +173,12 @@
 
             nomsDesJoueurs.forEach((joueur, index) => {
                 const p = document.createElement('p');
-                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points`;
+                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points (Boisson: Boisson ${Math.floor(Math.random() * maxBoisson) + 1})`;
                 resultatsDiv.appendChild(p);
             });
 
             const perdant = document.createElement('h3');
-            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresDesJoueurs[perdantIndex]} points.`;
+            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresDesJoueurs[perdantIndex]} points. Il doit payer la boisson.`;
             resultatsDiv.appendChild(perdant);
         }
     </script>
