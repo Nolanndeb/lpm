@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Jeu de Fléchettes</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Jeu de Fléchettes</h1>
+
+    <label for="nombreDeJoueurs">Entrez le nombre de joueurs:</label>
+    <input type="number" id="nombreDeJoueurs" min="1">
+    <button onclick="initialiserJoueurs()">Valider</button>
+
+    <div id="joueurs"></div>
+    <div id="grille"></div>
+    <div id="resultats"></div>
+
+    <script>
+        let nomsDesJoueurs = [];
+        let scoresDesJoueurs = [];
+        const tours = 10;
+
+        function initialiserJoueurs() {
+            const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
+            const joueursDiv = document.getElementById('joueurs');
+            joueursDiv.innerHTML = '';
+
+            for (let i = 0; i < nombreDeJoueurs; i++) {
+                const label = document.createElement('label');
+                label.textContent = `Nom du joueur ${i + 1}: `;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `joueur${i}`;
+                joueursDiv.appendChild(label);
+                joueursDiv.appendChild(input);
+                joueursDiv.appendChild(document.createElement('br'));
+            }
+
+            const button = document.createElement('button');
+            button.textContent = 'Enregistrer les joueurs';
+            button.onclick = enregistrerJoueurs;
+            joueursDiv.appendChild(button);
+        }
+
+        function enregistrerJoueurs() {
+            const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
+            nomsDesJoueurs = [];
+            scoresDesJoueurs = Array.from({ length: nombreDeJoueurs }, () => Array(tours).fill(0));
+
+            for (let i = 0; i < nombreDeJoueurs; i++) {
+                const joueurNom = document.getElementById(`joueur${i}`).value;
+                nomsDesJoueurs.push(joueurNom);
+            }
+
+            afficherGrille();
+        }
+
+        function afficherGrille() {
+            const grilleDiv = document.getElementById('grille');
+            grilleDiv.innerHTML = '';
+
+            const table = document.createElement('table');
+            const headerRow = document.createElement('tr');
+
+            const thEmpty = document.createElement('th');
+            headerRow.appendChild(thEmpty);
+
+            for (let i = 0; i < tours; i++) {
+                const th = document.createElement('th');
+                th.textContent = `Tour ${i + 1}`;
+                headerRow.appendChild(th);
+            }
+
+            const thTotal = document.createElement('th');
+            thTotal.textContent = 'Total';
+            headerRow.appendChild(thTotal);
+
+            table.appendChild(headerRow);
+
+            nomsDesJoueurs.forEach((joueur, index) => {
+                const row = document.createElement('tr');
+                const th = document.createElement('th');
+                th.textContent = joueur;
+                row.appendChild(th);
+
+                for (let i = 0; i < tours; i++) {
+                    const td = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '0';
+                    input.max = '60';
+                    input.id = `score${index}_${i}`;
+                    input.oninput = () => mettreAJourTotal(index);
+                    td.appendChild(input);
+                    row.appendChild(td);
+                }
+
+                const tdTotal = document.createElement('td');
+                tdTotal.id = `total${index}`;
+                tdTotal.textContent = '0';
+                row.appendChild(tdTotal);
+
+                table.appendChild(row);
+            });
+
+            grilleDiv.appendChild(table);
+
+            const button = document.createElement('button');
+            button.textContent = 'Calculer les résultats';
+            button.onclick = afficherResultats;
+            grilleDiv.appendChild(button);
+        }
+
+        function mettreAJourTotal(joueurIndex) {
+            let total = 0;
+
+            for (let i = 0; i < tours; i++) {
+                const score = parseInt(document.getElementById(`score${joueurIndex}_${i}`).value) || 0;
+                if (score > 30) {
+                    scoresDesJoueurs[joueurIndex][i] = 0;
+                    alert(`Score du joueur ${nomsDesJoueurs[joueurIndex]} au tour ${i + 1} est annulé car supérieur à 30.`);
+                } else {
+                    scoresDesJoueurs[joueurIndex][i] = score;
+                }
+                total += scoresDesJoueurs[joueurIndex][i];
+            }
+
+            document.getElementById(`total${joueurIndex}`).textContent = total;
+        }
+
+        function afficherResultats() {
+            const nombreDeJoueurs = nomsDesJoueurs.length;
+            let scoresTotaux = [];
+
+            for (let i = 0; i < nombreDeJoueurs; i++) {
+                const total = parseInt(document.getElementById(`total${i}`).textContent);
+                scoresTotaux.push(total);
+            }
+
+            let minScore = Math.min(...scoresTotaux);
+            let perdantIndex = scoresTotaux.indexOf(minScore);
+
+            const resultatsDiv = document.getElementById('resultats');
+            resultatsDiv.innerHTML = '<h2>Scores des joueurs:</h2>';
+
+            nomsDesJoueurs.forEach((joueur, index) => {
+                const p = document.createElement('p');
+                p.textContent = `${joueur}: ${scoresTotaux[index]} points`;
+                resultatsDiv.appendChild(p);
+            });
+
+            const perdant = document.createElement('h3');
+            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresTotaux[perdantIndex]} points.`;
+            resultatsDiv.appendChild(perdant);
+        }
+    </script>
+</body>
+</html>
