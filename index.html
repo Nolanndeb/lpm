@@ -109,14 +109,10 @@
     <script>
         let nomsDesJoueurs = [];
         let scoresDesJoueurs = [];
-        let maxBoisson = 0;
-
-        // Tableau des boissons disponibles
-        const boissons = [
-            'Boisson 1', 'Boisson 2', 'Boisson 3', 'Boisson 4', 
-            'Boisson 5', 'Boisson 6', 'Boisson 7', 'Boisson 8', 
-            'Boisson 9', 'Boisson 10', 'Boisson 11', 'Boisson 12'
-        ];
+        let boissonsAlcoolisees = [];
+        let boissonsNonAlcoolisees = [];
+        let boissonsDisponibles = [];
+        let boissonsDistribuees = [];
 
         function showSection(id) {
             document.querySelectorAll('.section').forEach(section => {
@@ -169,8 +165,8 @@
                 nomsDesJoueurs.push(joueurNom);
             }
 
-            afficherNiveau();
             showSection('sectionNiveau');
+            afficherNiveau();
         }
 
         function afficherNiveau() {
@@ -202,11 +198,33 @@
                     erreurDiv.textContent = 'Veuillez sélectionner un niveau.';
                     return;
                 }
-                maxBoisson = niveau * 10;
+                definirBoissons(niveau);
                 showSection('sectionGrille');
                 afficherGrille();
             };
             niveauDiv.appendChild(button);
+        }
+
+        function definirBoissons(niveau) {
+            switch (niveau) {
+                case 1:
+                    boissonsAlcoolisees = ['Bière', 'Vin rouge', 'Vin blanc', 'Whisky', 'Vodka'];
+                    boissonsNonAlcoolisees = ['Soda', 'Jus d’orange', 'Eau', 'Limonade', 'Thé'];
+                    break;
+                case 2:
+                    boissonsAlcoolisees = ['Bière', 'Vin rouge', 'Vin blanc', 'Whisky', 'Vodka', 'Rhum', 'Tequila', 'Cognac', 'Champagne', 'Liqueur', 'Gin', 'Pina Colada'];
+                    boissonsNonAlcoolisees = ['Soda', 'Jus d’orange', 'Eau', 'Limonade', 'Thé', 'Café', 'Milkshake', 'Smoothie'];
+                    break;
+                case 3:
+                    boissonsAlcoolisees = ['Bière', 'Vin rouge', 'Vin blanc', 'Whisky', 'Vodka', 'Rhum', 'Tequila', 'Cognac', 'Champagne', 'Liqueur', 'Gin', 'Pina Colada', 'Sangria', 'Martini', 'Mojito', 'Cuba Libre', 'Caipirinha', 'Bloody Mary', 'Negroni', 'Mai Tai', 'Old Fashioned', 'Mint Julep', 'Long Island Iced Tea', 'Margarita', 'Tequila Sunrise', 'Sidecar'];
+                    boissonsNonAlcoolisees = ['Soda', 'Jus d’orange', 'Eau', 'Limonade', 'Thé', 'Café', 'Milkshake', 'Smoothie', 'Chocolat chaud', 'Infusion'];
+                    break;
+            }
+            // Mélanger et préparer les boissons disponibles
+            boissonsDisponibles = [
+                ...boissonsAlcoolisees,
+                ...boissonsNonAlcoolisees
+            ];
         }
 
         function afficherGrille() {
@@ -275,7 +293,7 @@
 
             if (score >= 30) {
                 scoresDesJoueurs[joueurIndex] = 0;
-                alert(`Score du joueur ${nomsDesJoueurs[joueurIndex]} est annulé car supérieur ou égal à 30.`);
+                alert(`Le score du joueur ${nomsDesJoueurs[joueurIndex]} est annulé car supérieur ou égal à 30.`);
             } else {
                 scoresDesJoueurs[joueurIndex] = score;
             }
@@ -287,38 +305,29 @@
             const resultatsDiv = document.getElementById('resultatsJeu');
             resultatsDiv.innerHTML = '<h2>Scores des joueurs:</h2>';
 
-            // Mélange des boissons
-            const boissonsDisponibles = [...boissons];
-            shuffleArray(boissonsDisponibles);
-
-            // Assigner les boissons aux joueurs
-            let boissonsPourLesJoueurs = {};
-            for (let i = 0; i < nomsDesJoueurs.length; i++) {
-                boissonsPourLesJoueurs[nomsDesJoueurs[i]] = boissonsDisponibles[i];
-            }
-
             let minScore = Math.min(...scoresDesJoueurs);
             let perdantIndex = scoresDesJoueurs.indexOf(minScore);
 
+            // Mélanger les boissons disponibles pour éviter les doublons
+            let boissonsPourResultats = [...boissonsDisponibles];
+            boissonsPourResultats = boissonsPourResultats.sort(() => Math.random() - 0.5);
+
+            // Distribuer les boissons à chaque joueur
+            boissonsDistribuees = [];
             nomsDesJoueurs.forEach((joueur, index) => {
                 const p = document.createElement('p');
-                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points (Boisson: ${boissonsPourLesJoueurs[joueur]})`;
+                const boisson = boissonsPourResultats.shift();
+                boissonsDistribuees.push({ joueur, boisson });
+                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points - Boisson: ${boisson}`;
                 resultatsDiv.appendChild(p);
             });
 
+            // Ajouter la boisson que le perdant doit payer
             const perdant = document.createElement('h3');
-            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresDesJoueurs[perdantIndex]} points. Il doit payer la boisson.`;
+            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresDesJoueurs[perdantIndex]} points. Il doit payer la tournée.`;
             resultatsDiv.appendChild(perdant);
 
             showSection('sectionResultats');
-        }
-
-        // Fonction pour mélanger un tableau
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
         }
 
         // Initialisation pour commencer
