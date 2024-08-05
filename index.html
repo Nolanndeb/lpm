@@ -35,7 +35,6 @@
     <script>
         let nomsDesJoueurs = [];
         let scoresDesJoueurs = [];
-        const tours = 1; // Un seul tour
 
         function initialiserJoueurs() {
             const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
@@ -62,7 +61,7 @@
         function enregistrerJoueurs() {
             const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
             nomsDesJoueurs = [];
-            scoresDesJoueurs = Array.from({ length: nombreDeJoueurs }, () => Array(tours).fill(0));
+            scoresDesJoueurs = Array(nombreDeJoueurs).fill(0);
 
             for (let i = 0; i < nombreDeJoueurs; i++) {
                 const joueurNom = document.getElementById(`joueur${i}`).value;
@@ -82,9 +81,9 @@
             const thEmpty = document.createElement('th');
             headerRow.appendChild(thEmpty);
 
-            const th = document.createElement('th');
-            th.textContent = 'Tour 1';
-            headerRow.appendChild(th);
+            const thTour = document.createElement('th');
+            thTour.textContent = 'Tour';
+            headerRow.appendChild(thTour);
 
             const thTotal = document.createElement('th');
             thTotal.textContent = 'Total';
@@ -98,15 +97,15 @@
                 th.textContent = joueur;
                 row.appendChild(th);
 
-                const td = document.createElement('td');
+                const tdTour = document.createElement('td');
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.min = '0';
                 input.max = '60';
-                input.id = `score${index}_0`;
-                input.oninput = () => mettreAJourTotal(index);
-                td.appendChild(input);
-                row.appendChild(td);
+                input.id = `score${index}`;
+                input.oninput = () => mettreAJourScore(index);
+                tdTour.appendChild(input);
+                row.appendChild(tdTour);
 
                 const tdTotal = document.createElement('td');
                 tdTotal.id = `total${index}`;
@@ -124,46 +123,34 @@
             grilleDiv.appendChild(button);
         }
 
-        function mettreAJourTotal(joueurIndex) {
-            let total = 0;
+        function mettreAJourScore(joueurIndex) {
+            const score = parseInt(document.getElementById(`score${joueurIndex}`).value) || 0;
 
-            for (let i = 0; i < tours; i++) {
-                const score = parseInt(document.getElementById(`score${joueurIndex}_0`).value) || 0;
-                if (score > 30) {
-                    scoresDesJoueurs[joueurIndex][i] = 0;
-                    alert(`Score du joueur ${nomsDesJoueurs[joueurIndex]} est annulé car supérieur à 30.`);
-                } else {
-                    scoresDesJoueurs[joueurIndex][i] = score;
-                }
-                total += scoresDesJoueurs[joueurIndex][i];
+            if (score > 30) {
+                scoresDesJoueurs[joueurIndex] = 0;
+                alert(`Score du joueur ${nomsDesJoueurs[joueurIndex]} est annulé car supérieur à 30.`);
+            } else {
+                scoresDesJoueurs[joueurIndex] = score;
             }
 
-            document.getElementById(`total${joueurIndex}`).textContent = total;
+            document.getElementById(`total${joueurIndex}`).textContent = scoresDesJoueurs[joueurIndex];
         }
 
         function afficherResultats() {
-            const nombreDeJoueurs = nomsDesJoueurs.length;
-            let scoresTotaux = [];
-
-            for (let i = 0; i < nombreDeJoueurs; i++) {
-                const total = parseInt(document.getElementById(`total${i}`).textContent);
-                scoresTotaux.push(total);
-            }
-
-            let minScore = Math.min(...scoresTotaux);
-            let perdantIndex = scoresTotaux.indexOf(minScore);
-
             const resultatsDiv = document.getElementById('resultats');
             resultatsDiv.innerHTML = '<h2>Scores des joueurs:</h2>';
 
+            let minScore = Math.min(...scoresDesJoueurs);
+            let perdantIndex = scoresDesJoueurs.indexOf(minScore);
+
             nomsDesJoueurs.forEach((joueur, index) => {
                 const p = document.createElement('p');
-                p.textContent = `${joueur}: ${scoresTotaux[index]} points`;
+                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points`;
                 resultatsDiv.appendChild(p);
             });
 
             const perdant = document.createElement('h3');
-            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresTotaux[perdantIndex]} points.`;
+            perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresDesJoueurs[perdantIndex]} points.`;
             resultatsDiv.appendChild(perdant);
         }
     </script>
