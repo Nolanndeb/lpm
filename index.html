@@ -4,43 +4,138 @@
     <meta charset="UTF-8">
     <title>Le Petit Montagner</title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        input[type="number"], input[type="text"], select {
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(100% - 20px);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
         table {
             border-collapse: collapse;
-            width: 50%;
+            width: 100%;
             margin: 20px 0;
         }
         table, th, td {
-            border: 1px solid black;
+            border: 1px solid #ddd;
         }
         th, td {
-            padding: 8px;
+            padding: 12px;
             text-align: center;
         }
         th {
-            background-color: #f2f2f2;
+            background-color: #f4f4f4;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>Le Petit Montagner</h1>
+    <div class="container">
+        <!-- Section 1: Sélection du nombre de joueurs et noms -->
+        <div id="sectionJoueurs" class="section active">
+            <h1>Le Petit Montagner</h1>
+            <h2>Étape 1 : Entrez le nombre de joueurs</h2>
+            <label for="nombreDeJoueurs">Nombre de joueurs:</label>
+            <input type="number" id="nombreDeJoueurs" min="1">
+            <button onclick="initialiserJoueurs()">Valider</button>
+            <div id="formulaireJoueurs"></div>
+            <p id="erreurJoueurs" class="error"></p>
+        </div>
 
-    <label for="nombreDeJoueurs">Entrez le nombre de joueurs:</label>
-    <input type="number" id="nombreDeJoueurs" min="1">
-    <button onclick="initialiserJoueurs()">Valider</button>
+        <!-- Section 2: Sélection du niveau -->
+        <div id="sectionNiveau" class="section">
+            <h2>Étape 2 : Choisissez un niveau</h2>
+            <div id="niveauOptions"></div>
+            <p id="erreurNiveau" class="error"></p>
+        </div>
 
-    <div id="joueurs"></div>
-    <div id="niveau"></div>
-    <div id="grille"></div>
-    <div id="resultats"></div>
+        <!-- Section 3: Renseignement des scores -->
+        <div id="sectionGrille" class="section">
+            <h2>Étape 3 : Renseignement des scores</h2>
+            <div id="grilleJeu"></div>
+            <p id="erreurGrille" class="error"></p>
+        </div>
+
+        <!-- Section 4: Résultats -->
+        <div id="sectionResultats" class="section">
+            <h2>Étape 4 : Résultats</h2>
+            <div id="resultatsJeu"></div>
+        </div>
+    </div>
 
     <script>
         let nomsDesJoueurs = [];
         let scoresDesJoueurs = [];
+        let maxBoisson = 0;
+
+        // Tableau des boissons disponibles
+        const boissons = [
+            'Boisson 1', 'Boisson 2', 'Boisson 3', 'Boisson 4', 
+            'Boisson 5', 'Boisson 6', 'Boisson 7', 'Boisson 8', 
+            'Boisson 9', 'Boisson 10', 'Boisson 11', 'Boisson 12'
+        ];
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(id).classList.add('active');
+        }
 
         function initialiserJoueurs() {
-            const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
-            const joueursDiv = document.getElementById('joueurs');
+            const nombreDeJoueurs = parseInt(document.getElementById('nombreDeJoueurs').value);
+            const joueursDiv = document.getElementById('formulaireJoueurs');
+            const erreurDiv = document.getElementById('erreurJoueurs');
             joueursDiv.innerHTML = '';
+            erreurDiv.textContent = '';
+
+            if (isNaN(nombreDeJoueurs) || nombreDeJoueurs < 1) {
+                erreurDiv.textContent = 'Veuillez entrer un nombre de joueurs valide.';
+                return;
+            }
 
             for (let i = 0; i < nombreDeJoueurs; i++) {
                 const label = document.createElement('label');
@@ -60,21 +155,29 @@
         }
 
         function enregistrerJoueurs() {
-            const nombreDeJoueurs = document.getElementById('nombreDeJoueurs').value;
+            const nombreDeJoueurs = parseInt(document.getElementById('nombreDeJoueurs').value);
             nomsDesJoueurs = [];
             scoresDesJoueurs = Array(nombreDeJoueurs).fill(0);
+            const erreurDiv = document.getElementById('erreurJoueurs');
 
             for (let i = 0; i < nombreDeJoueurs; i++) {
-                const joueurNom = document.getElementById(`joueur${i}`).value;
+                const joueurNom = document.getElementById(`joueur${i}`).value.trim();
+                if (joueurNom === '') {
+                    erreurDiv.textContent = 'Tous les noms des joueurs doivent être remplis.';
+                    return;
+                }
                 nomsDesJoueurs.push(joueurNom);
             }
 
             afficherNiveau();
+            showSection('sectionNiveau');
         }
 
         function afficherNiveau() {
-            const niveauDiv = document.getElementById('niveau');
+            const niveauDiv = document.getElementById('niveauOptions');
+            const erreurDiv = document.getElementById('erreurNiveau');
             niveauDiv.innerHTML = '';
+            erreurDiv.textContent = '';
 
             const label = document.createElement('label');
             label.textContent = 'Choisissez un niveau: ';
@@ -93,15 +196,24 @@
 
             const button = document.createElement('button');
             button.textContent = 'Commencer le jeu';
-            button.onclick = afficherGrille;
+            button.onclick = () => {
+                const niveau = parseInt(select.value);
+                if (isNaN(niveau)) {
+                    erreurDiv.textContent = 'Veuillez sélectionner un niveau.';
+                    return;
+                }
+                maxBoisson = niveau * 10;
+                showSection('sectionGrille');
+                afficherGrille();
+            };
             niveauDiv.appendChild(button);
         }
 
         function afficherGrille() {
-            const niveau = document.getElementById('niveauSelect').value;
-            const maxBoisson = niveau * 10;
-            const grilleDiv = document.getElementById('grille');
+            const grilleDiv = document.getElementById('grilleJeu');
+            const erreurDiv = document.getElementById('erreurGrille');
             grilleDiv.innerHTML = '';
+            erreurDiv.textContent = '';
 
             const table = document.createElement('table');
             const headerRow = document.createElement('tr');
@@ -131,7 +243,7 @@
                 input.min = '0';
                 input.max = '60';
                 input.id = `score${index}`;
-                input.oninput = () => mettreAJourScore(index, maxBoisson);
+                input.oninput = () => mettreAJourScore(index);
                 tdTour.appendChild(input);
                 row.appendChild(tdTour);
 
@@ -147,11 +259,18 @@
 
             const button = document.createElement('button');
             button.textContent = 'Calculer les résultats';
-            button.onclick = () => afficherResultats(maxBoisson);
+            button.onclick = () => {
+                const scoresInvalides = Array.from(document.querySelectorAll('input[type="number"]')).some(input => input.value === '');
+                if (scoresInvalides) {
+                    erreurDiv.textContent = 'Tous les scores doivent être remplis.';
+                    return;
+                }
+                afficherResultats();
+            };
             grilleDiv.appendChild(button);
         }
 
-        function mettreAJourScore(joueurIndex, maxBoisson) {
+        function mettreAJourScore(joueurIndex) {
             const score = parseInt(document.getElementById(`score${joueurIndex}`).value) || 0;
 
             if (score >= 30) {
@@ -164,23 +283,46 @@
             document.getElementById(`total${joueurIndex}`).textContent = scoresDesJoueurs[joueurIndex];
         }
 
-        function afficherResultats(maxBoisson) {
-            const resultatsDiv = document.getElementById('resultats');
+        function afficherResultats() {
+            const resultatsDiv = document.getElementById('resultatsJeu');
             resultatsDiv.innerHTML = '<h2>Scores des joueurs:</h2>';
+
+            // Mélange des boissons
+            const boissonsDisponibles = [...boissons];
+            shuffleArray(boissonsDisponibles);
+
+            // Assigner les boissons aux joueurs
+            let boissonsPourLesJoueurs = {};
+            for (let i = 0; i < nomsDesJoueurs.length; i++) {
+                boissonsPourLesJoueurs[nomsDesJoueurs[i]] = boissonsDisponibles[i];
+            }
 
             let minScore = Math.min(...scoresDesJoueurs);
             let perdantIndex = scoresDesJoueurs.indexOf(minScore);
 
             nomsDesJoueurs.forEach((joueur, index) => {
                 const p = document.createElement('p');
-                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points (Boisson: Boisson ${Math.floor(Math.random() * maxBoisson) + 1})`;
+                p.textContent = `${joueur}: ${scoresDesJoueurs[index]} points (Boisson: ${boissonsPourLesJoueurs[joueur]})`;
                 resultatsDiv.appendChild(p);
             });
 
             const perdant = document.createElement('h3');
             perdant.textContent = `Le perdant est ${nomsDesJoueurs[perdantIndex]} avec ${scoresDesJoueurs[perdantIndex]} points. Il doit payer la boisson.`;
             resultatsDiv.appendChild(perdant);
+
+            showSection('sectionResultats');
         }
+
+        // Fonction pour mélanger un tableau
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Initialisation pour commencer
+        showSection('sectionJoueurs');
     </script>
 </body>
 </html>
